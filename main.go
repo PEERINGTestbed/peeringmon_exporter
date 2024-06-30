@@ -2,26 +2,41 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-const appID = "PEERINGMON-DEV"
+const (
+	appID = "PEERINGMON-DEV"
+	port  = ":2112"
+)
+
+var (
+	prefixStateGauge = promauto.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "prefix_state",
+		Help: "Visibility state of the prefix",
+	}, []string{"prefix", "city"})
+)
 
 type PrefixState struct {
 	Prefix string
-	State  map[string]int
+	State  map[string]float32
 	Mu     sync.Mutex
 }
 
 func (p *PrefixState) checkState() {
+	log.Trace().Str("Prefix", p.Prefix).Msg("checking prefix state")
 	url := "https://stat.ripe.net/data/visibility/data.json?data_overload_limit=ignore&include=peers_seeing&resource=" + p.Prefix + "&sourceapp=" + appID
 	resp, err := http.Get(url)
 	if err != nil {
@@ -37,36 +52,62 @@ func (p *PrefixState) checkState() {
 	var ripeStatResp RIPEStatResp
 	json.Unmarshal(body, &ripeStatResp)
 
-	// compare values
 	ipv6 := strings.Contains(p.Prefix, ":")
 
 	p.Mu.Lock()
 	defer p.Mu.Unlock()
 
 	for _, probe := range ripeStatResp.Data.Visibilities {
-		var vis int
+		var vis float32
 		if ipv6 {
-			vis = probe.Ipv6FullTablePeerCount /
-				len(probe.Ipv6FullTablePeersSeeing)
+			vis = float32(len(probe.Ipv6FullTablePeersSeeing)) /
+				float32(probe.Ipv6FullTablePeerCount)
 		} else {
-			vis = probe.Ipv4FullTablePeerCount /
-				len(probe.Ipv4FullTablePeersSeeing)
+			vis = float32(len(probe.Ipv4FullTablePeersSeeing)) /
+				float32(probe.Ipv4FullTablePeerCount)
+
 		}
 		p.State[probe.Probe.City] = vis
-		fmt.Println(probe.Probe.City)
-		fmt.Println(vis)
+		prefixStateGauge.WithLabelValues(p.Prefix, probe.Probe.City).Set(float64(vis))
 	}
 }
 
 func main() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout})
+	//zerolog.SetGlobalLevel(zerolog.TraceLevel)
+	log.Info().Msg("Starting PEERINGMON Exporter")
 
-	a := &PrefixState{Prefix: "2804:269c:fe53::/48", State: make(map[string]int)}
-	b := &PrefixState{Prefix: "2804:269c:fe56::/48", State: make(map[string]int)}
-	a.checkState()
-	b.checkState()
+	prefixes := []string{
+		"2804:269c:fe53::/48",
+		"2804:269c:fe56::/48",
+		"2606:4700:7000::/48",
+		"198.8.58.0/24",
+	}
 
-	// init exporter
-	// init struct with prefilled ranges
+	prefixStates := make([]*PrefixState, len(prefixes))
+	for i, prefix := range prefixes {
+		prefixStates[i] = &PrefixState{Prefix: prefix, State: make(map[string]float32)}
+	}
+
+	for _, ps := range prefixStates {
+		ps.checkState()
+	}
+
+	go func() {
+		ticker := time.NewTicker(1 * time.Minute)
+		defer ticker.Stop()
+
+		for range ticker.C {
+			for _, ps := range prefixStates {
+				ps.checkState()
+			}
+		}
+	}()
+
+	log.Info().Msg("Starting exporter on port " + port)
+	http.Handle("/metrics", promhttp.Handler())
+	if err := http.ListenAndServe(port, nil); err != nil {
+		log.Error().Err(err).Msg("Failed on http listening")
+	}
 }
