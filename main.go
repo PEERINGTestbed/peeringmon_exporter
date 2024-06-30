@@ -24,8 +24,8 @@ const (
 
 var (
 	prefixStateGauge = promauto.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "prefix_state",
-		Help: "Visibility state of the prefix",
+		Name: "prefix_visibility",
+		Help: "Visibility of the prefix",
 	}, []string{"prefix", "city"})
 )
 
@@ -75,7 +75,7 @@ func (p *PrefixState) checkState() {
 func main() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout})
-	//zerolog.SetGlobalLevel(zerolog.TraceLevel)
+	zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	log.Info().Msg("Starting PEERINGMON Exporter")
 
 	prefixes := []string{
