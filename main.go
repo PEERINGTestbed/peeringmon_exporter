@@ -1,12 +1,18 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
+	"flag"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"os/signal"
+	"strconv"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/rs/zerolog"
@@ -15,11 +21,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-)
-
-const (
-	appID = "PEERINGMON-DEV"
-	port  = ":2112"
 )
 
 var prefixes = []string{
@@ -76,6 +77,9 @@ var prefixes = []string{
 
 var prefixStates = []*PrefixState{}
 
+var port int
+var appId string
+
 var (
 	prefixStateGauge = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "prefix_visibility",
@@ -91,7 +95,7 @@ type PrefixState struct {
 
 func (p *PrefixState) checkState() {
 	log.Trace().Str("Prefix", p.Prefix).Msg("checking prefix state")
-	url := "https://stat.ripe.net/data/visibility/data.json?data_overload_limit=ignore&include=peers_seeing&resource=" + p.Prefix + "&sourceapp=" + appID
+	url := "https://stat.ripe.net/data/visibility/data.json?data_overload_limit=ignore&include=peers_seeing&resource=" + p.Prefix + "&sourceapp=" + appId
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Error().Err(err).Msg("Fetching ripestat")
@@ -129,15 +133,26 @@ func (p *PrefixState) checkState() {
 func updateStates() {
 	log.Debug().Msg("Updating Prefixes")
 	for _, ps := range prefixStates {
-		ps.checkState()
+		go ps.checkState()
 	}
 }
 
-func main() {
+func init() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout})
 	zerolog.SetGlobalLevel(zerolog.DebugLevel)
-	log.Info().Msg("Starting PEERINGMON Exporter")
+
+	flag.StringVar(&appId, "appid", "exporter", "provide a unique identifier to every data call")
+	flag.IntVar(&port, "port", 2112, "port")
+}
+
+func main() {
+	flag.Parse()
+
+	log.Info().
+		Str("appID", appId).
+		Str("Data Source", "RIPE RIS via RIPEstat API").
+		Msg("Starting PEERINGMON Exporter")
 
 	for _, prefix := range prefixes {
 		prefixStates = append(prefixStates, &PrefixState{
@@ -157,9 +172,29 @@ func main() {
 		}
 	}()
 
-	log.Info().Msg("Starting exporter on port " + port)
 	http.Handle("/metrics", promhttp.Handler())
-	if err := http.ListenAndServe(port, nil); err != nil {
-		log.Error().Err(err).Msg("Failed on http listening")
+
+	done := make(chan os.Signal, 1)
+	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+
+	srv := &http.Server{
+		Addr: ":" + strconv.Itoa(port),
 	}
+
+	go func() {
+		if err := srv.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
+			log.Fatal().Err(err).Msg("Failed to start HTTP server")
+		}
+	}()
+	log.Info().Int("port", port).Msg("Started exporter")
+
+	<-done
+	log.Info().Msg("Stopping")
+	shutdownCtx, shutdownRelease := context.WithTimeout(context.Background(), 10*time.Second)
+	defer shutdownRelease()
+
+	if err := srv.Shutdown(shutdownCtx); err != nil {
+		log.Fatal().Err(err).Msg("Failed to gracefully stop server")
+	}
+	log.Info().Msg("Graceful Shutdown Successful, bye")
 }
