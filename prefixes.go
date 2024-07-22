@@ -46,9 +46,9 @@ var prefixes = map[string]string{
 	"2804:269c:fe93::/48": "vtrtelaviv",
 	"2804:269c:fe94::/48": "vtrhonolulu",
 
-	"104.17.224.0/20": "cf valid4",
-	"2606:4700::/44":  "cf valid6",
+	//"104.17.224.0/20": "cf valid4",
+	//"2606:4700::/44":  "cf valid6",
 
-	"103.21.244.0/24":     "cf invalid4",
-	"2606:4700:7000::/48": "cf invalid6",
+	//"103.21.244.0/24":     "cf invalid4",
+	//"2606:4700:7000::/48": "cf invalid6",
 }

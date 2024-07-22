@@ -13,8 +13,14 @@ import (
 )
 
 var (
-	asPathGauge = promauto.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "upstreams",
+	upstreamsGauge = promauto.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "direct_upstreams",
+		Help: "upstreams",
+	},
+		[]string{"prefix", "city", "mux", "upstreams"},
+	)
+	upstreams2Gauge = promauto.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "indirect_upstreams",
 		Help: "upstreams",
 	},
 		[]string{"prefix", "city", "mux", "upstreams"},
@@ -55,26 +61,46 @@ func (p *PrefixState) checkLGState() {
 
 	for _, rrc := range ripeStatLookingGlassResp.Data.Rrcs {
 		upstreams := []string{}
+		upstreams2 := []string{}
 		//communities := []string{}
+
 		for _, peer := range rrc.Peers {
 			asPathSplit := strings.Split(peer.AsPath, " ")
 			upstream := ""
-			if len(asPathSplit) >= 2 {
-				upstream = asPathSplit[len(asPathSplit)-2]
+			upstream2 := ""
+			if len(asPathSplit) >= 4 {
+				upstream = asPathSplit[len(asPathSplit)-4]
 				if err != nil {
 					log.Err(err).Msg("atoi fail")
 				}
 			}
 			upstreams = append(upstreams, upstream)
+			if len(asPathSplit) >= 5 {
+				upstream2 = asPathSplit[len(asPathSplit)-5]
+				if err != nil {
+					log.Err(err).Msg("atoi fail")
+				}
+			}
+			upstreams2 = append(upstreams2, upstream2)
 			//communities = append(communities, peer.Community)
 		}
+
 		upstreams = slices.Compact(upstreams)
-		asPathGauge.WithLabelValues(
+		upstreamsGauge.WithLabelValues(
 			p.Prefix,
 			rrc.Location,
 			prefixes[p.Prefix],
 			strings.Join(upstreams, " "),
 		).Set(float64(len(upstreams)))
+
+		upstreams2 = slices.Compact(upstreams2)
+		upstreams2Gauge.WithLabelValues(
+			p.Prefix,
+			rrc.Location,
+			prefixes[p.Prefix],
+			strings.Join(upstreams2, " "),
+		).Set(float64(len(upstreams2)))
+
 		//communities = slices.Compact(communities)
 		//for _, e := range communities {
 		//	bgpCommunitiesGauge.WithLabelValues(
