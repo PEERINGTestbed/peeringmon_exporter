@@ -74,18 +74,21 @@ func (p *PrefixState) checkLGState() {
 					log.Err(err).Msg("atoi fail")
 				}
 			}
-			upstreams = append(upstreams, upstream)
 			if len(asPathSplit) >= 5 {
 				upstream2 = asPathSplit[len(asPathSplit)-5]
 				if err != nil {
 					log.Err(err).Msg("atoi fail")
 				}
 			}
-			upstreams2 = append(upstreams2, upstream2)
+			if !slices.Contains(upstreams, upstream) {
+				upstreams = append(upstreams, upstream)
+			}
+			if !slices.Contains(upstreams2, upstream2) {
+				upstreams2 = append(upstreams2, upstream2)
+			}
 			//communities = append(communities, peer.Community)
 		}
 
-		upstreams = slices.Compact(upstreams)
 		upstreamsGauge.WithLabelValues(
 			p.Prefix,
 			rrc.Location,
@@ -93,7 +96,6 @@ func (p *PrefixState) checkLGState() {
 			strings.Join(upstreams, " "),
 		).Set(float64(len(upstreams)))
 
-		upstreams2 = slices.Compact(upstreams2)
 		upstreams2Gauge.WithLabelValues(
 			p.Prefix,
 			rrc.Location,
