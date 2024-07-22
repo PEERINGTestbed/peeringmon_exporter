@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -15,10 +14,10 @@ import (
 
 var (
 	asPathGauge = promauto.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "as_path",
-		Help: "AS PATH",
+		Name: "upstreams",
+		Help: "upstreams",
 	},
-		[]string{"prefix", "city", "mux"},
+		[]string{"prefix", "city", "mux", "upstreams"},
 	)
 	//bgpCommunitiesGauge = promauto.NewGaugeVec(prometheus.GaugeOpts{
 	//	Name: "bgp_communities",
@@ -55,14 +54,13 @@ func (p *PrefixState) checkLGState() {
 	defer p.Mu.Unlock()
 
 	for _, rrc := range ripeStatLookingGlassResp.Data.Rrcs {
-		upstreams := []int{}
+		upstreams := []string{}
 		//communities := []string{}
 		for _, peer := range rrc.Peers {
 			asPathSplit := strings.Split(peer.AsPath, " ")
-			upstream := 0
+			upstream := ""
 			if len(asPathSplit) >= 2 {
-				upstreamStr := asPathSplit[len(asPathSplit)-2]
-				upstream, err = strconv.Atoi(upstreamStr)
+				upstream = asPathSplit[len(asPathSplit)-2]
 				if err != nil {
 					log.Err(err).Msg("atoi fail")
 				}
@@ -71,13 +69,12 @@ func (p *PrefixState) checkLGState() {
 			//communities = append(communities, peer.Community)
 		}
 		upstreams = slices.Compact(upstreams)
-		for _, upstream := range upstreams {
-			asPathGauge.WithLabelValues(
-				p.Prefix,
-				rrc.Location,
-				prefixes[p.Prefix],
-			).Set(float64(upstream))
-		}
+		asPathGauge.WithLabelValues(
+			p.Prefix,
+			rrc.Location,
+			prefixes[p.Prefix],
+			strings.Join(upstreams, " "),
+		).Set(float64(len(upstreams)))
 		//communities = slices.Compact(communities)
 		//for _, e := range communities {
 		//	bgpCommunitiesGauge.WithLabelValues(
