@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
-	"sync"
 	"syscall"
 	"time"
 
@@ -18,25 +17,17 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-var prefixStates = []*PrefixState{}
-
 var port int
 var appId string
 var debug bool
 
 const ripestatBase = "https://stat.ripe.net"
 
-type PrefixState struct {
-	Prefix string
-	State  map[string]float32
-	Mu     sync.Mutex
-}
-
 func updateStates() {
 	log.Debug().Msg("Updating Prefixes")
-	for _, ps := range prefixStates {
-		go ps.checkVisState()
-		go ps.checkLGState()
+	for _, prefix := range monitorState {
+		go prefix.checkVisState()
+		go prefix.checkLGState()
 	}
 }
 
@@ -63,13 +54,6 @@ func main() {
 		Str("appID", appId).
 		Str("Data Source", "RIPE RIS via RIPEstat API").
 		Msg("Starting PEERINGMON Exporter")
-
-	for prefix, _ := range prefixes {
-		prefixStates = append(prefixStates, &PrefixState{
-			Prefix: prefix,
-			State:  make(map[string]float32),
-		})
-	}
 
 	updateStates()
 

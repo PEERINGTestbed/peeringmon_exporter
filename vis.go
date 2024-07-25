@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -15,12 +16,12 @@ var (
 	prefixStateGauge = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "prefix_visibility",
 		Help: "Visibility of the prefix",
-	}, []string{"prefix", "city", "mux"})
+	}, []string{"prefix", "city", "mux", "available", "origin"})
 )
 
-func (p *PrefixState) checkVisState() {
-	log.Trace().Str("Prefix", p.Prefix).Msg("checking prefix state")
-	url := ripestatBase + "/data/visibility/data.json?data_overload_limit=ignore&include=peers_seeing&resource=" + p.Prefix + "&sourceapp=" + appId
+func (p *Prefix) checkVisState() {
+	log.Trace().Str("Prefix", p.prefix).Msg("checking prefix state")
+	url := ripestatBase + "/data/visibility/data.json?data_overload_limit=ignore&include=peers_seeing&resource=" + p.prefix + "&sourceapp=" + appId
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Error().Err(err).Msg("Fetching ripestat")
@@ -41,10 +42,13 @@ func (p *PrefixState) checkVisState() {
 			Msg("ripestat(vis) resp status code != 200")
 	}
 
-	ipv6 := strings.Contains(p.Prefix, ":")
+	ipv6 := strings.Contains(p.prefix, ":")
 
-	p.Mu.Lock()
-	defer p.Mu.Unlock()
+	availableStr := "y"
+	if !p.available {
+		availableStr = "n"
+	}
+	origin := strconv.Itoa(p.origin)
 
 	for _, probe := range ripeStatVisibilityResp.Data.Visibilities {
 		var vis float32
@@ -56,11 +60,12 @@ func (p *PrefixState) checkVisState() {
 				float32(probe.Ipv4FullTablePeerCount)
 
 		}
-		p.State[probe.Probe.City] = vis
 		prefixStateGauge.WithLabelValues(
-			p.Prefix,
+			p.prefix,
 			probe.Probe.City,
-			prefixes[p.Prefix],
+			p.pop,
+			availableStr,
+			origin,
 		).Set(float64(vis))
 	}
 }

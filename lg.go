@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -17,13 +18,13 @@ var (
 		Name: "direct_upstreams",
 		Help: "upstreams",
 	},
-		[]string{"prefix", "city", "mux", "upstreams"},
+		[]string{"prefix", "city", "mux", "upstreams", "available", "origin"},
 	)
 	upstreams2Gauge = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "indirect_upstreams",
 		Help: "upstreams",
 	},
-		[]string{"prefix", "city", "mux", "upstreams"},
+		[]string{"prefix", "city", "mux", "upstreams", "available", "origin"},
 	)
 	//bgpCommunitiesGauge = promauto.NewGaugeVec(prometheus.GaugeOpts{
 	//	Name: "bgp_communities",
@@ -33,9 +34,9 @@ var (
 	//)
 )
 
-func (p *PrefixState) checkLGState() {
-	log.Trace().Str("Prefix", p.Prefix).Msg("checking prefix state")
-	url := ripestatBase + "/data/looking-glass/data.json?resource=" + p.Prefix + "&sourceapp=" + appId
+func (p *Prefix) checkLGState() {
+	log.Trace().Str("Prefix", p.prefix).Msg("checking prefix state")
+	url := ripestatBase + "/data/looking-glass/data.json?resource=" + p.prefix + "&sourceapp=" + appId
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Error().Err(err).Msg("Fetching ripestat")
@@ -56,8 +57,12 @@ func (p *PrefixState) checkLGState() {
 			Msg("ripestat(lg) resp status code != 200")
 	}
 
-	p.Mu.Lock()
-	defer p.Mu.Unlock()
+	availableStr := "y"
+	if !p.available {
+		availableStr = "n"
+	}
+
+	origin := strconv.Itoa(p.origin)
 
 	for _, rrc := range ripeStatLookingGlassResp.Data.Rrcs {
 		upstreams := []string{}
@@ -90,25 +95,29 @@ func (p *PrefixState) checkLGState() {
 		}
 
 		upstreamsGauge.WithLabelValues(
-			p.Prefix,
+			p.prefix,
 			rrc.Location,
-			prefixes[p.Prefix],
+			p.pop,
 			strings.Join(upstreams, " "),
+			availableStr,
+			origin,
 		).Set(float64(len(upstreams)))
 
 		upstreams2Gauge.WithLabelValues(
-			p.Prefix,
+			p.prefix,
 			rrc.Location,
-			prefixes[p.Prefix],
+			p.pop,
 			strings.Join(upstreams2, " "),
+			availableStr,
+			origin,
 		).Set(float64(len(upstreams2)))
 
 		//communities = slices.Compact(communities)
 		//for _, e := range communities {
 		//	bgpCommunitiesGauge.WithLabelValues(
-		//		p.Prefix,
+		//		p.prefix,
 		//		rrc.Location,
-		//		prefixes[p.Prefix],
+		//		prefixes[p.prefix],
 		//		e,
 		//	).Set(1)
 		//}
