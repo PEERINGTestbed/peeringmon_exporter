@@ -18,13 +18,13 @@ var (
 		Name: "direct_upstreams",
 		Help: "upstreams",
 	},
-		[]string{"prefix", "city", "mux", "upstreams", "available", "origin"},
+		[]string{"prefix", "mux", "upstreams", "available", "origin"},
 	)
 	upstreams2Gauge = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "indirect_upstreams",
 		Help: "upstreams",
 	},
-		[]string{"prefix", "city", "mux", "upstreams", "available", "origin"},
+		[]string{"prefix", "mux", "upstreams", "available", "origin"},
 	)
 	ripeStatLGErr = promauto.NewCounter(prometheus.CounterOpts{
 		Name: "ripestatlg_err",
@@ -144,7 +144,6 @@ func (p *Prefix) checkLGState() {
 
 		upstreamsGauge.WithLabelValues(
 			p.prefix,
-			rrc.Location,
 			p.pop,
 			strings.Join(upstreams, " "),
 			availableStr,
@@ -153,7 +152,6 @@ func (p *Prefix) checkLGState() {
 
 		upstreams2Gauge.WithLabelValues(
 			p.prefix,
-			rrc.Location,
 			p.pop,
 			strings.Join(upstreams2, " "),
 			availableStr,
