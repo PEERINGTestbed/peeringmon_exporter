@@ -17,6 +17,10 @@ var (
 		Name: "prefix_visibility",
 		Help: "Visibility of the prefix",
 	}, []string{"prefix", "city", "mux", "available", "origin"})
+	ripeStatVisibilityErr = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "ripestatvis_err",
+		Help: "error count for ripestat vis endpoint",
+	})
 )
 
 func (p *Prefix) checkVisState() {
@@ -25,6 +29,7 @@ func (p *Prefix) checkVisState() {
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Error().Err(err).Msg("Fetching ripestat")
+		ripeStatVisibilityErr.Inc()
 		return
 	}
 
@@ -42,6 +47,7 @@ func (p *Prefix) checkVisState() {
 		log.Error().Int("status code", statusCode).
 			Str("status", ripeStatVisibilityResp.Status).
 			Msg("ripestat(vis) resp status code != 200")
+		ripeStatVisibilityErr.Inc()
 		return
 	}
 

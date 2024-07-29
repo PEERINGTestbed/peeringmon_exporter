@@ -26,6 +26,14 @@ var (
 	},
 		[]string{"prefix", "city", "mux", "upstreams", "available", "origin"},
 	)
+	ripeStatLGErr = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "ripestatlg_err",
+		Help: "error count for ripestat lg endpoint",
+	})
+	possibleHijack = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "possible_hijack",
+		Help: "upstream mismatch, possible hijack",
+	})
 	//bgpCommunitiesGauge = promauto.NewGaugeVec(prometheus.GaugeOpts{
 	//	Name: "bgp_communities",
 	//	Help: "BGP Communities",
@@ -40,6 +48,7 @@ func (p *Prefix) checkLGState() {
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Error().Err(err).Msg("Fetching ripestat")
+		ripeStatLGErr.Inc()
 		return
 	}
 
@@ -57,12 +66,22 @@ func (p *Prefix) checkLGState() {
 		log.Error().Int("status code", statusCode).
 			Str("status", ripeStatLookingGlassResp.Status).
 			Msg("ripestat(lg) resp status code != 200")
+		ripeStatLGErr.Inc()
 		return
 	}
 
 	availableStr := "y"
 	if !p.available {
 		availableStr = "n"
+	}
+
+	var UFMGOrigin bool
+	if p.origin == 61574 {
+		UFMGOrigin = true
+	}
+
+	if p.origin == 13335 {
+		return
 	}
 
 	origin := strconv.Itoa(p.origin)
@@ -76,20 +95,46 @@ func (p *Prefix) checkLGState() {
 			asPathSplit := strings.Split(peer.AsPath, " ")
 			upstream := ""
 			upstream2 := ""
-			if len(asPathSplit) >= 4 {
-				upstream = asPathSplit[len(asPathSplit)-4]
-				if err != nil {
-					log.Err(err).Msg("atoi fail")
+			offset := 2
+			if UFMGOrigin {
+				offset += 2
+			}
+			if len(asPathSplit) < offset+1 {
+				return
+			}
+			upstream = asPathSplit[len(asPathSplit)-offset]
+			if err != nil {
+				log.Error().Err(err).Msg("atoi fail")
+				return
+			}
+			matched := false
+			for _, dbUpstream := range dbUpstreams {
+				if dbUpstream.name == upstream {
+					matched = true
+					break
 				}
 			}
-			if len(asPathSplit) >= 5 {
-				upstream2 = asPathSplit[len(asPathSplit)-5]
-				if err != nil {
-					log.Err(err).Msg("atoi fail")
-				}
+			if !matched {
+				log.Info().
+					Str("prefix", p.prefix).
+					Str("upstream", upstream).
+					Str("path", peer.AsPath).
+					Msg("upstream mismatch, hijack possible")
+				possibleHijack.Inc()
+				return
 			}
 			if !slices.Contains(upstreams, upstream) {
 				upstreams = append(upstreams, upstream)
+			}
+
+			// second upstream
+			if len(asPathSplit) < offset+2 {
+				return
+			}
+			upstream2 = asPathSplit[len(asPathSplit)-offset-1]
+			if err != nil {
+				log.Error().Err(err).Msg("atoi fail")
+				return
 			}
 			if !slices.Contains(upstreams2, upstream2) {
 				upstreams2 = append(upstreams2, upstream2)

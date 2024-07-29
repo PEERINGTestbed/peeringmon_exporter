@@ -20,6 +20,7 @@ import (
 var port int
 var appId string
 var debug bool
+var jsonLog bool
 
 const ripestatBase = "https://stat.ripe.net"
 
@@ -33,15 +34,19 @@ func updateStates() {
 
 func init() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout})
 
 	flag.StringVar(&appId, "appid", "exporter", "provide a unique identifier to every data call")
 	flag.IntVar(&port, "port", 2112, "port")
 	flag.BoolVar(&debug, "debug", false, "debug")
+	flag.BoolVar(&jsonLog, "json", false, "json logging")
 }
 
 func main() {
 	flag.Parse()
+
+	if !jsonLog {
+		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout})
+	}
 
 	if debug {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
@@ -56,6 +61,8 @@ func main() {
 		Msg("Starting PEERINGMON Exporter")
 
 	updateStates()
+
+	setUpstreamGauge()
 
 	go func() {
 		ticker := time.NewTicker(1 * time.Minute)
