@@ -84,8 +84,8 @@ var monitorState = []Prefix{
 	Prefix{prefix: "2804:269c:fe34::/48", pop: "vtrmanchester", available: true, origin: 47065},
 	Prefix{prefix: "2804:269c:fe35::/48", pop: "vtrtelaviv", available: true, origin: 47065},
 	Prefix{prefix: "2804:269c:fe36::/48", pop: "vtrhonolulu", available: true, origin: 47065},
-	Prefix{prefix: "2804:269c:fe37::/48", pop: "cfuseast1", available: true, origin: 47065},
-	Prefix{prefix: "2804:269c:fe38::/48", pop: "vtrezri1", available: true, origin: 47065},
+	Prefix{prefix: "2804:269c:fe37::/48", pop: "cfuseast1", available: false, origin: 47065},
+	Prefix{prefix: "2804:269c:fe38::/48", pop: "vtrezri1", available: false, origin: 47065},
 
 	Prefix{prefix: "2804:269c:fe41::/48", pop: "seattle01", available: true, origin: 61574},
 	Prefix{prefix: "2804:269c:fe42::/48", pop: "isi01", available: true, origin: 61574},
@@ -138,8 +138,8 @@ var monitorState = []Prefix{
 	Prefix{prefix: "2804:269c:fe74::/48", pop: "vtrmanchester", available: true, origin: 61574},
 	Prefix{prefix: "2804:269c:fe75::/48", pop: "vtrtelaviv", available: true, origin: 61574},
 	Prefix{prefix: "2804:269c:fe76::/48", pop: "vtrhonolulu", available: true, origin: 61574},
-	Prefix{prefix: "2804:269c:fe77::/48", pop: "cfuseast1", available: true, origin: 61574},
-	Prefix{prefix: "2804:269c:fe78::/48", pop: "vtrezri1", available: true, origin: 61574},
+	Prefix{prefix: "2804:269c:fe77::/48", pop: "cfuseast1", available: false, origin: 61574},
+	Prefix{prefix: "2804:269c:fe78::/48", pop: "vtrezri1", available: false, origin: 61574},
 
 	Prefix{prefix: "104.17.224.0/20", pop: "cf valid4", available: true, origin: 13335},
 	Prefix{prefix: "2606:4700::/44", pop: "cf valid6", available: true, origin: 13335},
