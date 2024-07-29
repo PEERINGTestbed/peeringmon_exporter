@@ -25,11 +25,13 @@ func (p *Prefix) checkVisState() {
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Error().Err(err).Msg("Fetching ripestat")
+		return
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Error().Err(err).Msg("reading ripestat resp")
+		return
 	}
 	defer resp.Body.Close()
 
@@ -40,6 +42,7 @@ func (p *Prefix) checkVisState() {
 		log.Error().Int("status code", statusCode).
 			Str("status", ripeStatVisibilityResp.Status).
 			Msg("ripestat(vis) resp status code != 200")
+		return
 	}
 
 	ipv6 := strings.Contains(p.prefix, ":")

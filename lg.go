@@ -40,11 +40,13 @@ func (p *Prefix) checkLGState() {
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Error().Err(err).Msg("Fetching ripestat")
+		return
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Error().Err(err).Msg("reading ripestat resp")
+		return
 	}
 	defer resp.Body.Close()
 
@@ -55,6 +57,7 @@ func (p *Prefix) checkLGState() {
 		log.Error().Int("status code", statusCode).
 			Str("status", ripeStatLookingGlassResp.Status).
 			Msg("ripestat(lg) resp status code != 200")
+		return
 	}
 
 	availableStr := "y"
