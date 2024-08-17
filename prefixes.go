@@ -8,28 +8,30 @@ type Prefix struct {
 }
 
 type Upstream struct {
-	asn  string
 	name string
+	asn  int
 }
 
 var dbUpstreams = []Upstream{
-	Upstream{"Northeastern University", "156"},
-	Upstream{"FABRIC Testbed", "398900"},
-	Upstream{"GRNet", "5408"},
-	Upstream{"Bit BV", "12859"},
-	Upstream{"Netwerkvereniging Coloclue", "8283"},
-	Upstream{"Stony Brook University", "5719"},
-	Upstream{"Clemson University", "12148"},
-	Upstream{"Utah Education Network", "210"},
-	Upstream{"Georgia Institute of Technology", "2637"},
-	Upstream{"University of Wisconsin - Madison", "3128"},
-	Upstream{"Rede Nacional de Ensino e Pesquisa (RNP)", "1916"},
-	Upstream{"Cornell University", "26"},
-	Upstream{"psg.com RGNet", "3130"},
-	Upstream{"Los Nettos Regional Network", "226"},
-	Upstream{"UW at PNW GigaPoP", "101"},
-	Upstream{"vultr", "20473"},
-	Upstream{"HE", "6939"},
+	Upstream{"Northeastern University", 156},
+	Upstream{"FABRIC Testbed", 398900},
+	Upstream{"GRNet", 5408},
+	Upstream{"Bit BV", 12859},
+	Upstream{"Netwerkvereniging Coloclue", 8283},
+	Upstream{"Stony Brook University", 5719},
+	Upstream{"Clemson University", 12148},
+	Upstream{"Utah Education Network", 210},
+	Upstream{"Georgia Institute of Technology", 2637},
+	Upstream{"University of Wisconsin - Madison", 3128},
+	Upstream{"Rede Nacional de Ensino e Pesquisa (RNP)", 1916},
+	Upstream{"Cornell University", 26},
+	Upstream{"psg.com RGNet", 3130},
+	Upstream{"Los Nettos Regional Network", 226},
+	Upstream{"UW at PNW GigaPoP", 101},
+	Upstream{"vultr", 20473},
+	Upstream{"HE", 6939},
+	Upstream{"PEERING", 47065},
+	Upstream{"1299 cf", 1299},
 }
 
 var monitorState = []Prefix{

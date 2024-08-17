@@ -1,6 +1,8 @@
 package main
 
 import (
+	"strconv"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/rs/zerolog/log"
@@ -17,7 +19,7 @@ func setUpstreamGauge() {
 	log.Trace().Msg("setting upstreeams gauge")
 	for _, dbUpstream := range dbUpstreams {
 		upstreamGauge.WithLabelValues(
-			dbUpstream.asn,
+			strconv.Itoa(dbUpstream.asn),
 			dbUpstream.name,
 		).Set(1)
 	}

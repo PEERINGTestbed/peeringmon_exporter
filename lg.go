@@ -75,15 +75,6 @@ func (p *Prefix) checkLGState() {
 		availableStr = "n"
 	}
 
-	var UFMGOrigin bool
-	if p.origin == 61574 {
-		UFMGOrigin = true
-	}
-
-	if p.origin == 13335 {
-		return
-	}
-
 	origin := strconv.Itoa(p.origin)
 
 	for _, rrc := range ripeStatLookingGlassResp.Data.Rrcs {
@@ -96,20 +87,35 @@ func (p *Prefix) checkLGState() {
 			upstream := ""
 			upstream2 := ""
 			offset := 2
-			if UFMGOrigin {
-				offset += 2
-			}
 			if len(asPathSplit) < offset+1 {
 				return
 			}
-			upstream = asPathSplit[len(asPathSplit)-offset]
+			pos := 0
+			for i, asn := range asPathSplit {
+				if asn == origin {
+					pos = i - 1
+				}
+				if pos < 0 {
+					return
+				}
+			}
+			if pos == 0 {
+				log.Info().
+					Str("prefix", p.prefix).
+					Str("asPath", peer.AsPath).
+					Str("expected origin", origin).
+					Msg("correct origin not found, hijack possible")
+				possibleHijack.Inc()
+				return
+			}
+			upstream = asPathSplit[pos]
 			if err != nil {
 				log.Error().Err(err).Msg("atoi fail")
 				return
 			}
 			matched := false
 			for _, dbUpstream := range dbUpstreams {
-				if dbUpstream.name == upstream {
+				if strconv.Itoa(dbUpstream.asn) == upstream {
 					matched = true
 					break
 				}
@@ -119,7 +125,8 @@ func (p *Prefix) checkLGState() {
 					Str("prefix", p.prefix).
 					Str("upstream", upstream).
 					Str("path", peer.AsPath).
-					Msg("upstream mismatch, hijack possible")
+					Int("pos", pos).
+					Msg("expected upstream not found, hijack possible")
 				possibleHijack.Inc()
 				return
 			}
