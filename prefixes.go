@@ -35,6 +35,8 @@ var dbUpstreams = []Upstream{
 }
 
 var monitorState = []Prefix{
+	Prefix{prefix: "184.164.250.0/24", pop: "rotate", available: true, origin: 47065},
+	Prefix{prefix: "184.164.251.0/24", pop: "rotate", available: true, origin: 47065},
 	Prefix{prefix: "2804:269c:fe01::/48", pop: "seattle01", available: true, origin: 47065},
 	Prefix{prefix: "2804:269c:fe02::/48", pop: "isi01", available: true, origin: 47065},
 	Prefix{prefix: "2804:269c:fe03::/48", pop: "cornell01", available: false, origin: 47065},

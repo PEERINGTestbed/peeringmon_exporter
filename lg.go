@@ -34,12 +34,12 @@ var (
 		Name: "possible_hijack",
 		Help: "upstream mismatch, possible hijack",
 	})
-	//bgpCommunitiesGauge = promauto.NewGaugeVec(prometheus.GaugeOpts{
-	//	Name: "bgp_communities",
-	//	Help: "BGP Communities",
-	//},
-	//	[]string{"prefix", "city", "mux", "communities"},
-	//)
+	bgpCommunitiesGauge = promauto.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "bgp_communities",
+		Help: "BGP Communities",
+	},
+		[]string{"prefix", "city", "mux", "communities"},
+	)
 )
 
 func (p *Prefix) checkLGState() {
@@ -80,7 +80,7 @@ func (p *Prefix) checkLGState() {
 	for _, rrc := range ripeStatLookingGlassResp.Data.Rrcs {
 		upstreams := []string{}
 		upstreams2 := []string{}
-		//communities := []string{}
+		communities := []string{}
 
 		for _, peer := range rrc.Peers {
 			asPathSplit := strings.Split(peer.AsPath, " ")
@@ -146,7 +146,7 @@ func (p *Prefix) checkLGState() {
 			if !slices.Contains(upstreams2, upstream2) {
 				upstreams2 = append(upstreams2, upstream2)
 			}
-			//communities = append(communities, peer.Community)
+			communities = append(communities, peer.Community)
 		}
 
 		upstreamsGauge.WithLabelValues(
@@ -165,14 +165,14 @@ func (p *Prefix) checkLGState() {
 			origin,
 		).Set(float64(len(upstreams2)))
 
-		//communities = slices.Compact(communities)
-		//for _, e := range communities {
-		//	bgpCommunitiesGauge.WithLabelValues(
-		//		p.prefix,
-		//		rrc.Location,
-		//		prefixes[p.prefix],
-		//		e,
-		//	).Set(1)
-		//}
+		communities = slices.Compact(communities)
+		for _, e := range communities {
+			bgpCommunitiesGauge.WithLabelValues(
+				p.prefix,
+				rrc.Location,
+				p.pop,
+				e,
+			).Set(1)
+		}
 	}
 }
