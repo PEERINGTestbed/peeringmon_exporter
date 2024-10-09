@@ -145,6 +145,12 @@ var monitorState = []Prefix{
 	Prefix{prefix: "2804:269c:fe77::/48", pop: "cfuseast1", available: false, origin: 61574},
 	Prefix{prefix: "2804:269c:fe78::/48", pop: "vtrezri1", available: false, origin: 61574},
 
+	Prefix{prefix: "2804:269c:3c::/46", pop: "unknown", available: false, origin: 61574},
+	Prefix{prefix: "2804:269c:3c::/48", pop: "unknown", available: false, origin: 61574},
+	Prefix{prefix: "2804:269c:3d::/48", pop: "unknown", available: false, origin: 61574},
+	Prefix{prefix: "2804:269c:3e::/48", pop: "unknown", available: false, origin: 61574},
+	Prefix{prefix: "2804:269c:3f::/48", pop: "unknown", available: false, origin: 61574},
+
 	Prefix{prefix: "104.17.224.0/20", pop: "cf valid4", available: true, origin: 13335},
 	Prefix{prefix: "2606:4700::/44", pop: "cf valid6", available: true, origin: 13335},
 
