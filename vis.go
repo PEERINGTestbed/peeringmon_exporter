@@ -25,6 +25,7 @@ var (
 
 func (p *Prefix) checkVisState() {
 	log.Trace().Str("Prefix", p.prefix).Msg("checking prefix state")
+	prefixStateGauge.Reset()
 	url := ripestatBase + "/data/visibility/data.json?data_overload_limit=ignore&include=peers_seeing&resource=" + p.prefix + "&sourceapp=" + appId
 	resp, err := http.Get(url)
 	if err != nil {
