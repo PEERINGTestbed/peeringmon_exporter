@@ -46,7 +46,6 @@ func (p *Prefix) checkLGState() {
 	log.Trace().Str("Prefix", p.prefix).Msg("checking prefix state")
 	upstreamsGauge.Reset()
 	upstreams2Gauge.Reset()
-	bgpCommunitiesGauge.Reset()
 	url := ripestatBase + "/data/looking-glass/data.json?resource=" + p.prefix + "&sourceapp=" + appId
 	resp, err := http.Get(url)
 	if err != nil {
