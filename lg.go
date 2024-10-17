@@ -75,6 +75,10 @@ func (p *Prefix) checkLGState() {
 		availableStr = "n"
 	}
 
+	upstreamsGauge.Reset()
+	upstreams2Gauge.Reset()
+	bgpCommunitiesGauge.Reset()
+
 	origin := strconv.Itoa(p.origin)
 
 	for _, rrc := range ripeStatLookingGlassResp.Data.Rrcs {
@@ -149,7 +153,6 @@ func (p *Prefix) checkLGState() {
 			communities = append(communities, peer.Community)
 		}
 
-		upstreamsGauge.Reset()
 		upstreamsGauge.WithLabelValues(
 			p.prefix,
 			p.pop,
@@ -158,7 +161,6 @@ func (p *Prefix) checkLGState() {
 			origin,
 		).Set(float64(len(upstreams)))
 
-		upstreams2Gauge.Reset()
 		upstreams2Gauge.WithLabelValues(
 			p.prefix,
 			p.pop,
@@ -167,7 +169,6 @@ func (p *Prefix) checkLGState() {
 			origin,
 		).Set(float64(len(upstreams2)))
 
-		bgpCommunitiesGauge.Reset()
 		communities = slices.Compact(communities)
 		for _, e := range communities {
 			bgpCommunitiesGauge.WithLabelValues(
