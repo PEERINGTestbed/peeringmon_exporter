@@ -44,8 +44,6 @@ var (
 
 func (p *Prefix) checkLGState() {
 	log.Trace().Str("Prefix", p.prefix).Msg("checking prefix state")
-	upstreamsGauge.Reset()
-	upstreams2Gauge.Reset()
 	url := ripestatBase + "/data/looking-glass/data.json?resource=" + p.prefix + "&sourceapp=" + appId
 	resp, err := http.Get(url)
 	if err != nil {
@@ -151,6 +149,7 @@ func (p *Prefix) checkLGState() {
 			communities = append(communities, peer.Community)
 		}
 
+		upstreamsGauge.Reset()
 		upstreamsGauge.WithLabelValues(
 			p.prefix,
 			p.pop,
@@ -159,6 +158,7 @@ func (p *Prefix) checkLGState() {
 			origin,
 		).Set(float64(len(upstreams)))
 
+		upstreams2Gauge.Reset()
 		upstreams2Gauge.WithLabelValues(
 			p.prefix,
 			p.pop,
@@ -167,6 +167,7 @@ func (p *Prefix) checkLGState() {
 			origin,
 		).Set(float64(len(upstreams2)))
 
+		bgpCommunitiesGauge.Reset()
 		communities = slices.Compact(communities)
 		for _, e := range communities {
 			bgpCommunitiesGauge.WithLabelValues(
