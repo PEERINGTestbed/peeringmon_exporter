@@ -27,8 +27,8 @@ const ripestatBase = "https://stat.ripe.net"
 func updateStates() {
 	log.Debug().Msg("Updating Prefixes")
 	for _, prefix := range monitorState {
-		go prefix.checkVisState()
-		go prefix.checkLGState()
+		prefix.checkVisState()
+		prefix.checkLGState()
 	}
 }
 
