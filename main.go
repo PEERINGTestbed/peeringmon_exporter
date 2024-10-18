@@ -26,6 +26,11 @@ const ripestatBase = "https://stat.ripe.net"
 
 func updateStates() {
 	log.Debug().Msg("Updating Prefixes")
+
+	upstreamsGauge.Reset()
+	upstreams2Gauge.Reset()
+	bgpCommunitiesGauge.Reset()
+
 	for _, prefix := range monitorState {
 		prefix.checkVisState()
 		prefix.checkLGState()
@@ -60,9 +65,8 @@ func main() {
 		Str("Data Source", "RIPE RIS via RIPEstat API").
 		Msg("Starting PEERINGMON Exporter")
 
-	updateStates()
-
 	setUpstreamGauge()
+	updateStates()
 
 	go func() {
 		ticker := time.NewTicker(1 * time.Minute)

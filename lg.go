@@ -75,10 +75,6 @@ func (p *Prefix) checkLGState() {
 		availableStr = "n"
 	}
 
-	upstreamsGauge.Reset()
-	upstreams2Gauge.Reset()
-	bgpCommunitiesGauge.Reset()
-
 	origin := strconv.Itoa(p.origin)
 
 	for _, rrc := range ripeStatLookingGlassResp.Data.Rrcs {
