@@ -397,4 +397,10 @@ var monitorState = []Prefix{
 
 	Prefix{prefix: "103.21.244.0/24", pop: "cf invalid4", available: false, origin: 13335},
 	Prefix{prefix: "2606:4700:7000::/48", pop: "cf invalid6", available: false, origin: 13335},
+
+	Prefix{prefix: "1.1.1.0/24", pop: "cf dns 0", available: true, origin: 13335},
+	Prefix{prefix: "1.0.0.0/24", pop: "cf dns 1", available: true, origin: 13335},
+
+	Prefix{prefix: "198.8.58.0/24", pop: "ezri 0", available: true, origin: 206628},
+	Prefix{prefix: "198.8.59.0/24", pop: "ezri 1", available: true, origin: 206628},
 }
