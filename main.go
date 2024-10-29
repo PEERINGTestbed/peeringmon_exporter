@@ -30,6 +30,9 @@ func updateStates() {
 	upstreamsGauge.Reset()
 	upstreams2Gauge.Reset()
 	bgpCommunitiesGauge.Reset()
+	ripeRISPeerRouteCount.Reset()
+
+	fetchRisPeer()
 
 	for _, prefix := range monitorState {
 		prefix.checkVisState()
