@@ -72,7 +72,7 @@ func main() {
 	updateStates()
 
 	go func() {
-		ticker := time.NewTicker(5 * time.Minute)
+		ticker := time.NewTicker(1 * time.Minute)
 		defer ticker.Stop()
 
 		for range ticker.C {
