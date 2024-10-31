@@ -88,7 +88,7 @@ func (p *Prefix) checkLGState() {
 			upstream2 := ""
 			offset := 2
 			if len(asPathSplit) < offset+1 {
-				return
+				continue
 			}
 			pos := 0
 			for i, asn := range asPathSplit {
@@ -96,7 +96,7 @@ func (p *Prefix) checkLGState() {
 					pos = i - 1
 				}
 				if pos < 0 {
-					return
+					continue
 				}
 			}
 			if pos == 0 {
@@ -106,12 +106,12 @@ func (p *Prefix) checkLGState() {
 					Str("expected origin", origin).
 					Msg("correct origin not found, hijack possible")
 				possibleHijack.Inc()
-				return
+				continue
 			}
 			upstream = asPathSplit[pos]
 			if err != nil {
 				log.Error().Err(err).Msg("atoi fail")
-				return
+				continue
 			}
 			matched := false
 			for _, dbUpstream := range dbUpstreams {
@@ -121,14 +121,15 @@ func (p *Prefix) checkLGState() {
 				}
 			}
 			if !matched {
-				log.Info().
+				//change this back to info after stabalizes
+				log.Debug().
 					Str("prefix", p.prefix).
 					Str("upstream", upstream).
 					Str("path", peer.AsPath).
 					Int("pos", pos).
 					Msg("expected upstream not found, hijack possible")
 				possibleHijack.Inc()
-				return
+				continue
 			}
 			if !slices.Contains(upstreams, upstream) {
 				upstreams = append(upstreams, upstream)
@@ -136,12 +137,12 @@ func (p *Prefix) checkLGState() {
 
 			// second upstream
 			if len(asPathSplit) < offset+2 {
-				return
+				continue
 			}
 			upstream2 = asPathSplit[len(asPathSplit)-offset-1]
 			if err != nil {
 				log.Error().Err(err).Msg("atoi fail")
-				return
+				continue
 			}
 			if !slices.Contains(upstreams2, upstream2) {
 				upstreams2 = append(upstreams2, upstream2)

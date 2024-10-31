@@ -35,6 +35,19 @@ var dbUpstreams = []Upstream{
 }
 
 var monitorState = []Prefix{
+
+	Prefix{prefix: "104.17.224.0/20", pop: "cf valid4", available: true, origin: 13335},
+	Prefix{prefix: "2606:4700::/44", pop: "cf valid6", available: true, origin: 13335},
+
+	Prefix{prefix: "103.21.244.0/24", pop: "cf invalid4", available: false, origin: 13335},
+	Prefix{prefix: "2606:4700:7000::/48", pop: "cf invalid6", available: false, origin: 13335},
+
+	Prefix{prefix: "1.1.1.0/24", pop: "cf dns 0", available: true, origin: 13335},
+	Prefix{prefix: "1.0.0.0/24", pop: "cf dns 1", available: true, origin: 13335},
+
+	Prefix{prefix: "198.8.58.0/24", pop: "ezri 0", available: true, origin: 206628},
+	Prefix{prefix: "198.8.59.0/24", pop: "ezri 1", available: true, origin: 206628},
+
 	Prefix{prefix: "184.164.250.0/24", pop: "rotate", available: true, origin: 47065},
 	Prefix{prefix: "184.164.251.0/24", pop: "rotate", available: true, origin: 47065},
 
@@ -391,16 +404,4 @@ var monitorState = []Prefix{
 	Prefix{prefix: "2804:269c:3d::/48", pop: "unknown", available: false, origin: 61574},
 	Prefix{prefix: "2804:269c:3e::/48", pop: "unknown", available: false, origin: 61574},
 	Prefix{prefix: "2804:269c:3f::/48", pop: "unknown", available: false, origin: 61574},
-
-	Prefix{prefix: "104.17.224.0/20", pop: "cf valid4", available: true, origin: 13335},
-	Prefix{prefix: "2606:4700::/44", pop: "cf valid6", available: true, origin: 13335},
-
-	Prefix{prefix: "103.21.244.0/24", pop: "cf invalid4", available: false, origin: 13335},
-	Prefix{prefix: "2606:4700:7000::/48", pop: "cf invalid6", available: false, origin: 13335},
-
-	Prefix{prefix: "1.1.1.0/24", pop: "cf dns 0", available: true, origin: 13335},
-	Prefix{prefix: "1.0.0.0/24", pop: "cf dns 1", available: true, origin: 13335},
-
-	Prefix{prefix: "198.8.58.0/24", pop: "ezri 0", available: true, origin: 206628},
-	Prefix{prefix: "198.8.59.0/24", pop: "ezri 1", available: true, origin: 206628},
 }
