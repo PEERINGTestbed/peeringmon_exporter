@@ -83,6 +83,7 @@ func (p *Prefix) checkLGState() {
 		communities := []string{}
 
 		for _, peer := range rrc.Peers {
+			communities = append(communities, peer.Community)
 			asPathSplit := strings.Split(peer.AsPath, " ")
 			upstream := ""
 			upstream2 := ""
@@ -100,7 +101,8 @@ func (p *Prefix) checkLGState() {
 				}
 			}
 			if pos == 0 {
-				log.Info().
+				//change this back to info after stabalizes
+				log.Debug().
 					Str("prefix", p.prefix).
 					Str("asPath", peer.AsPath).
 					Str("expected origin", origin).
@@ -147,7 +149,16 @@ func (p *Prefix) checkLGState() {
 			if !slices.Contains(upstreams2, upstream2) {
 				upstreams2 = append(upstreams2, upstream2)
 			}
-			communities = append(communities, peer.Community)
+		}
+
+		//communities = slices.Compact(communities)
+		for _, e := range communities {
+			bgpCommunitiesGauge.WithLabelValues(
+				p.prefix,
+				rrc.Location,
+				p.pop,
+				e,
+			).Set(1)
 		}
 
 		upstreamsGauge.WithLabelValues(
@@ -165,15 +176,5 @@ func (p *Prefix) checkLGState() {
 			availableStr,
 			origin,
 		).Set(float64(len(upstreams2)))
-
-		communities = slices.Compact(communities)
-		for _, e := range communities {
-			bgpCommunitiesGauge.WithLabelValues(
-				p.prefix,
-				rrc.Location,
-				p.pop,
-				e,
-			).Set(1)
-		}
 	}
 }
