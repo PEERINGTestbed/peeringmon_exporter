@@ -78,6 +78,22 @@ func (p *Prefix) checkLGState() {
 	origin := strconv.Itoa(p.origin)
 
 	for _, rrc := range ripeStatLookingGlassResp.Data.Rrcs {
+		communities := []string{}
+		for _, peer := range rrc.Peers {
+			communities = append(communities, peer.Community)
+			//communities = slices.Compact(communities)
+			for _, e := range communities {
+				bgpCommunitiesGauge.WithLabelValues(
+					p.prefix,
+					rrc.Location,
+					p.pop,
+					e,
+				).Set(1)
+			}
+		}
+	}
+
+	for _, rrc := range ripeStatLookingGlassResp.Data.Rrcs {
 		upstreams := []string{}
 		upstreams2 := []string{}
 		communities := []string{}
@@ -149,16 +165,6 @@ func (p *Prefix) checkLGState() {
 			if !slices.Contains(upstreams2, upstream2) {
 				upstreams2 = append(upstreams2, upstream2)
 			}
-		}
-
-		//communities = slices.Compact(communities)
-		for _, e := range communities {
-			bgpCommunitiesGauge.WithLabelValues(
-				p.prefix,
-				rrc.Location,
-				p.pop,
-				e,
-			).Set(1)
 		}
 
 		upstreamsGauge.WithLabelValues(
