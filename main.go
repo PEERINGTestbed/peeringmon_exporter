@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
+	"sync"
 	"syscall"
 	"time"
 
@@ -34,10 +35,17 @@ func updateStates() {
 
 	fetchRisPeer()
 
+	var wg sync.WaitGroup
+	wg.Add(len(monitorState))
+
 	for _, prefix := range monitorState {
-		prefix.checkVisState()
-		prefix.checkLGState()
+		go func() {
+			defer wg.Done()
+			prefix.checkVisState()
+			prefix.checkLGState()
+		}()
 	}
+	wg.Wait()
 }
 
 func init() {

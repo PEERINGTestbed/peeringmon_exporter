@@ -96,10 +96,8 @@ func (p *Prefix) checkLGState() {
 	for _, rrc := range ripeStatLookingGlassResp.Data.Rrcs {
 		upstreams := []string{}
 		upstreams2 := []string{}
-		communities := []string{}
 
 		for _, peer := range rrc.Peers {
-			communities = append(communities, peer.Community)
 			asPathSplit := strings.Split(peer.AsPath, " ")
 			upstream := ""
 			upstream2 := ""
