@@ -43,6 +43,7 @@ func updateStates() {
 	upstreams2Gauge.Reset()
 	bgpCommunitiesGauge.Reset()
 	ripeRISPeerRouteCount.Reset()
+	prefixCountGauge.Reset()
 
 	fetchRisPeer()
 
