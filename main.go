@@ -24,6 +24,7 @@ var port int
 var appId string
 var debug bool
 var jsonLog bool
+var fetchInterval int
 
 const ripestatBase = "https://stat.ripe.net"
 
@@ -67,6 +68,7 @@ func init() {
 	flag.IntVar(&port, "port", 2112, "port")
 	flag.BoolVar(&debug, "debug", false, "debug")
 	flag.BoolVar(&jsonLog, "json", false, "json logging")
+	flag.IntVar(&fetchInterval, "i", 15, "fetch interval")
 }
 
 func main() {
@@ -92,7 +94,7 @@ func main() {
 	updateStates()
 
 	go func() {
-		ticker := time.NewTicker(1 * time.Minute)
+		ticker := time.NewTicker(time.Duration(fetchInterval) * time.Second)
 		defer ticker.Stop()
 
 		for range ticker.C {
