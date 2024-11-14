@@ -38,13 +38,13 @@ var (
 		Name: "bgp_communities",
 		Help: "BGP Communities",
 	},
-		[]string{"prefix", "city", "mux", "communities"},
+		[]string{"prefix", "rrc", "mux", "communities"},
 	)
 	prefixCountGauge = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "prefix_count",
 		Help: "Prefix Count",
 	},
-		[]string{"prefix", "city", "mux"},
+		[]string{"prefix", "rrc", "mux"},
 	)
 )
 
@@ -86,7 +86,7 @@ func (p *Prefix) checkLGState() {
 	for _, rrc := range ripeStatLookingGlassResp.Data.Rrcs {
 		prefixCountGauge.WithLabelValues(
 			p.prefix,
-			rrc.Location,
+			rrc.Rrc,
 			p.pop,
 		).Set(float64(len(rrc.Peers)))
 	}
@@ -99,7 +99,7 @@ func (p *Prefix) checkLGState() {
 			for _, e := range peer.Community {
 				bgpCommunitiesGauge.WithLabelValues(
 					p.prefix,
-					rrc.Location,
+					rrc.Rrc,
 					p.pop,
 					string(e),
 				).Set(1)
