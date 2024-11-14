@@ -40,6 +40,12 @@ var (
 	},
 		[]string{"prefix", "city", "mux", "communities"},
 	)
+	prefixCountGauge = promauto.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "prefix_count",
+		Help: "Prefix Count",
+	},
+		[]string{"prefix", "city", "mux"},
+	)
 )
 
 func (p *Prefix) checkLGState() {
@@ -76,6 +82,14 @@ func (p *Prefix) checkLGState() {
 	}
 
 	origin := strconv.Itoa(p.origin)
+
+	for _, rrc := range ripeStatLookingGlassResp.Data.Rrcs {
+		prefixCountGauge.WithLabelValues(
+			p.prefix,
+			rrc.Location,
+			p.pop,
+		).Set(float64(len(rrc.Peers)))
+	}
 
 	for _, rrc := range ripeStatLookingGlassResp.Data.Rrcs {
 		//communities := []string{}
