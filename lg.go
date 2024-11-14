@@ -78,16 +78,16 @@ func (p *Prefix) checkLGState() {
 	origin := strconv.Itoa(p.origin)
 
 	for _, rrc := range ripeStatLookingGlassResp.Data.Rrcs {
-		communities := []string{}
+		//communities := []string{}
 		for _, peer := range rrc.Peers {
-			communities = append(communities, peer.Community)
+			//communities = append(communities, peer.Community)
 			//communities = slices.Compact(communities)
-			for _, e := range communities {
+			for _, e := range peer.Community {
 				bgpCommunitiesGauge.WithLabelValues(
 					p.prefix,
 					rrc.Location,
 					p.pop,
-					e,
+					string(e),
 				).Set(1)
 			}
 		}
