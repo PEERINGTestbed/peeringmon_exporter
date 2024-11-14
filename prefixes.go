@@ -48,9 +48,6 @@ var monitorState = []Prefix{
 	Prefix{prefix: "198.8.58.0/24", pop: "ezri 0", available: true, origin: 206628},
 	Prefix{prefix: "198.8.59.0/24", pop: "ezri 1", available: true, origin: 206628},
 
-	Prefix{prefix: "184.164.250.0/24", pop: "rotate", available: true, origin: 47065},
-	Prefix{prefix: "184.164.251.0/24", pop: "rotate", available: true, origin: 47065},
-
 	Prefix{prefix: "2804:269c:fe01::/48", pop: "seattle01", available: true, origin: 47065},
 	Prefix{prefix: "2804:269c:fe02::/48", pop: "isi01", available: true, origin: 47065},
 	Prefix{prefix: "2804:269c:fe03::/48", pop: "cornell01", available: false, origin: 47065},
