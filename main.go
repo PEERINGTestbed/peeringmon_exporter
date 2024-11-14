@@ -15,6 +15,8 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
@@ -25,7 +27,15 @@ var jsonLog bool
 
 const ripestatBase = "https://stat.ripe.net"
 
+var (
+	updateDuration = promauto.NewGauge(prometheus.GaugeOpts{
+		Name: "update_duration",
+		Help: "time it takes for update to finish",
+	})
+)
+
 func updateStates() {
+	start := time.Now()
 	log.Debug().Msg("Updating Prefixes")
 
 	upstreamsGauge.Reset()
@@ -46,6 +56,8 @@ func updateStates() {
 		}()
 	}
 	wg.Wait()
+	elapsed := time.Since(start)
+	updateDuration.Set(elapsed.Seconds())
 }
 
 func init() {
