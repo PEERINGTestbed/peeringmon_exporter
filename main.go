@@ -53,7 +53,7 @@ func updateStates() {
 	for _, prefix := range monitorState {
 		go func() {
 			defer wg.Done()
-			prefix.checkVisState()
+			//prefix.checkVisState()
 			prefix.checkLGState()
 		}()
 	}
@@ -120,7 +120,7 @@ func main() {
 	log.Info().Int("port", port).Msg("Started exporter")
 
 	<-done
-	log.Info().Msg("Stopping")
+	log.Info().Msg("Gracefully shutting down")
 	shutdownCtx, shutdownRelease := context.WithTimeout(context.Background(), 10*time.Second)
 	defer shutdownRelease()
 
