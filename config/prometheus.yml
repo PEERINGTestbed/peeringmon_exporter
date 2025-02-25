@@ -1,0 +1,16 @@
+global:
+  scrape_interval: 1m
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'peering_exporter'
+    scrape_interval: 15s
+    scrape_timeout: 15s
+    static_configs:
+      - targets: ['exporter:2112']
+
+  # - job_name: 'peering_controller'
+  #   scrape_interval: 30s
+  #   scrape_timeout: 30s
+  #   static_configs:
+  #     - targets: ['controller:51871']
