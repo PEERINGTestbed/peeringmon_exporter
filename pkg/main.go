@@ -69,7 +69,7 @@ func init() {
 	flag.IntVar(&port, "port", 2112, "port")
 	flag.BoolVar(&debug, "debug", false, "debug")
 	flag.BoolVar(&jsonLog, "json", false, "json logging")
-	flag.IntVar(&fetchInterval, "i", 15, "fetch interval")
+	flag.IntVar(&fetchInterval, "i", 120, "fetch interval (seconds)")
 }
 
 func main() {

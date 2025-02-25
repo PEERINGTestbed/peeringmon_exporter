@@ -1,0 +1,24 @@
+services:
+  grafana:
+    # Set `user` to the user owning `data/prometheus`. Get your user ID
+    # running `id -u`.
+    user: "1002"
+    # You likely do not need to edit the volume mountpoints below, but
+    # we list them here for documentation.  You may need to edit the
+    # config/prometheus.yml file.
+    volumes:
+      - ./data/grafana:/var/lib/grafana
+      - ./config/grafana.ini:/etc/grafana/grafana.ini
+    # Graphana is the only externally-visible service.  We bind only to
+    # the loopback interface to control external access.
+    ports:
+      - 127.0.0.1:53000:3000
+    # Set the `admin` password for Grafana:
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=setPasswordHereYo
+
+  prometheus:
+    user: "1002"
+    volumes:
+      - ./data/prometheus:/prometheus
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
